@@ -13,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.order.customer.service.ext.CustomerToken;
 
+import jdk.internal.org.jline.utils.Log;
+
 @Service
 public class CustomerInvoker {
 	
@@ -25,17 +27,20 @@ public class CustomerInvoker {
 	@HystrixCommand(fallbackMethod = "getCustomerTokenFallback")
 	public CustomerToken getCustomerToken(String customerId) {
 		try {
-			
+			Log.info("######################### Customer Evaluation with url {} and id {}",serviceUrl,customerId);
 			URL customerUrl = new URL(serviceUrl+"/customer/{customer-id}");
 			ResponseEntity<CustomerToken> customerResp = restTemplate.getForEntity(customerUrl.toString(), CustomerToken.class,
 					customerId);
 			if (customerResp.getStatusCode().equals(HttpStatus.OK)) {
+				Log.info("######################### Got Customer Response");
 				CustomerToken customerToken = customerResp.getBody();
 				return customerToken;
 			} else {
+				Log.info("######################### Unable Customer Response");
 				throw new RuntimeException("Error in getting customer data");
 			}
 		} catch (MalformedURLException e) {
+			Log.info("######################### Customer URL is not correct");
 			e.printStackTrace();
 			return null;
 		}
